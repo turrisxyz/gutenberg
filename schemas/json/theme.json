@@ -606,7 +606,7 @@
 				"core/comment-template": {
 					"$ref": "#/definitions/settingsPropertiesComplete"
 				},
-				"core/comments-query-loop": {
+				"core/comments": {
 					"$ref": "#/definitions/settingsPropertiesComplete"
 				},
 				"core/cover": {
@@ -1184,7 +1184,7 @@
 				"core/comment-template": {
 					"$ref": "#/definitions/stylesPropertiesAndElementsComplete"
 				},
-				"core/comments-query-loop": {
+				"core/comments": {
 					"$ref": "#/definitions/stylesPropertiesAndElementsComplete"
 				},
 				"core/cover": {
