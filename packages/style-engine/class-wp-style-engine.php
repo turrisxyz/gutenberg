@@ -398,13 +398,18 @@ class WP_Style_Engine {
 		// Build CSS rules output.
 		$css_selector              = isset( $options['selector'] ) ? $options['selector'] : null;
 		$filtered_css_declarations = array();
+		$should_prettify           = isset( $options['prettify'] ) ? $options['prettify'] : null;
 
 		if ( ! empty( $css_declarations ) ) {
 			// Generate inline style declarations.
 			foreach ( $css_declarations as $css_property => $css_value ) {
 				$filtered_css_declaration = esc_html( safecss_filter_attr( "{$css_property}: {$css_value}" ) );
 				if ( ! empty( $filtered_css_declaration ) ) {
-					$filtered_css_declarations[] = $filtered_css_declaration . ';';
+					if ( $should_prettify ) {
+						$filtered_css_declarations[] = "\t$filtered_css_declaration;\n";
+					} else {
+						$filtered_css_declarations[] = $filtered_css_declaration . ';';
+					}
 				}
 			}
 		}
@@ -416,9 +421,15 @@ class WP_Style_Engine {
 		if ( ! empty( $filtered_css_declarations ) ) {
 			// Return an entire rule if there is a selector.
 			if ( $css_selector ) {
-				$css_rule             = "$css_selector { ";
-				$css_rule            .= implode( ' ', $filtered_css_declarations );
-				$css_rule            .= ' }';
+				if ( $should_prettify ) {
+					$css_rule  = "$css_selector {\n";
+					$css_rule .= implode( '', $filtered_css_declarations );
+					$css_rule .= "}\n";
+				} else {
+					$css_rule  = "$css_selector { ";
+					$css_rule .= implode( ' ', $filtered_css_declarations );
+					$css_rule .= ' }';
+				}
 				$styles_output['css'] = $css_rule;
 			} else {
 				$styles_output['css'] = implode( ' ', $filtered_css_declarations );

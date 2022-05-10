@@ -342,10 +342,7 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 		);
 
 		if ( isset( $theme_json['styles']['elements'] ) ) {
-
 			foreach ( $theme_json['styles']['elements'] as $element => $node ) {
-
-				// Handle element defaults.
 				$nodes[] = array(
 					'path'     => array( 'styles', 'elements', $element ),
 					'selector' => static::ELEMENTS[ $element ],
@@ -505,11 +502,24 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 		 * @link https://github.com/WordPress/gutenberg/issues/36147.
 		 */
 		if ( static::ROOT_BLOCK_SELECTOR === $selector ) {
-			$block_rules .= 'body { margin: 0; }';
+			$node['spacing']['margin'] = '0px';
 		}
 
 		// 2. Generate and append the rules that use the general selector.
-		$block_rules .= static::to_ruleset( $selector, $declarations );
+		//$block_rules .= static::to_ruleset( $selector, $declarations );
+		// @TODO check duotone
+
+		$styles = gutenberg_style_engine_generate(
+			$node,
+			array(
+				'selector' => $selector,
+				'prettify' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG,
+			)
+		);
+
+		if ( isset( $styles['css'] ) ) {
+			$block_rules .= $styles['css'];
+		}
 
 		// 3. Generate and append the rules that use the duotone selector.
 		if ( isset( $block_metadata['duotone'] ) && ! empty( $declarations_duotone ) ) {
