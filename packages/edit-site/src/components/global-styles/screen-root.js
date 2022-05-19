@@ -7,6 +7,7 @@ import {
 	__experimentalSpacer as Spacer,
 	__experimentalVStack as VStack,
 	FlexItem,
+	Button,
 	CardBody,
 	Card,
 	CardDivider,
@@ -24,46 +25,58 @@ import { IconWithCurrentColor } from './icon-with-current-color';
 import { NavigationButtonAsItem } from './navigation-button';
 import ContextMenu from './context-menu';
 import StylesPreview from './preview';
+import { useRandomizer } from './hooks';
 
 function ScreenRoot() {
 	const { variations } = useSelect( ( select ) => {
 		return {
-			variations:
-				select(
-					coreStore
-				).__experimentalGetCurrentThemeGlobalStylesVariations(),
+			variations: select(
+				coreStore
+			).__experimentalGetCurrentThemeGlobalStylesVariations(),
 		};
 	}, [] );
+
+	const [ randomizeTheme ] = useRandomizer();
 
 	return (
 		<Card size="small">
 			<CardBody>
-				<VStack spacing={ 4 }>
-					<Card>
-						<CardMedia>
-							<StylesPreview />
-						</CardMedia>
-					</Card>
-					{ !! variations?.length && (
-						<ItemGroup>
-							<NavigationButtonAsItem
-								path="/variations"
-								aria-label={ __( 'Browse styles' ) }
-							>
-								<HStack justify="space-between">
-									<FlexItem>
-										{ __( 'Browse styles' ) }
-									</FlexItem>
-									<IconWithCurrentColor
-										icon={
-											isRTL() ? chevronLeft : chevronRight
-										}
-									/>
-								</HStack>
-							</NavigationButtonAsItem>
-						</ItemGroup>
-					) }
-					<ContextMenu />
+				<VStack spacing={ 2 }>
+					<FlexItem>
+						<Button
+							onClick={ randomizeTheme }
+							variant="secondary"
+							isSmall
+						>
+							Randomize
+						</Button>
+					</FlexItem>
+					<VStack spacing={ 4 }>
+						<Card>
+							<CardMedia>
+								<StylesPreview />
+							</CardMedia>
+						</Card>
+						{ !! variations?.length && (
+							<ItemGroup>
+								<NavigationButtonAsItem path="/variations">
+									<HStack justify="space-between">
+										<FlexItem>
+											{ __( 'Browse styles' ) }
+										</FlexItem>
+										<IconWithCurrentColor
+											icon={
+												isRTL()
+													? chevronLeft
+													: chevronRight
+											}
+										/>
+									</HStack>
+								</NavigationButtonAsItem>
+							</ItemGroup>
+						) }
+						<ContextMenu />
+					</VStack>
 				</VStack>
 			</CardBody>
 
