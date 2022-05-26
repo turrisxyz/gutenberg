@@ -6,15 +6,16 @@ import {
 	__experimentalHStack as HStack,
 	__experimentalSpacer as Spacer,
 	__experimentalVStack as VStack,
-	FlexItem,
 	Button,
-	CardBody,
 	Card,
+	CardBody,
 	CardDivider,
+	CardFooter,
 	CardMedia,
+	FlexItem,
 } from '@wordpress/components';
 import { isRTL, __ } from '@wordpress/i18n';
-import { chevronLeft, chevronRight } from '@wordpress/icons';
+import { chevronLeft, chevronRight, reusableBlock } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 
@@ -41,42 +42,29 @@ function ScreenRoot() {
 	return (
 		<Card size="small">
 			<CardBody>
-				<VStack spacing={ 2 }>
-					<FlexItem>
-						<Button
-							onClick={ randomizeTheme }
-							variant="secondary"
-							isSmall
-						>
-							Randomize
-						</Button>
-					</FlexItem>
-					<VStack spacing={ 4 }>
-						<Card>
-							<CardMedia>
-								<StylesPreview />
-							</CardMedia>
-						</Card>
-						{ !! variations?.length && (
-							<ItemGroup>
-								<NavigationButtonAsItem path="/variations">
-									<HStack justify="space-between">
-										<FlexItem>
-											{ __( 'Browse styles' ) }
-										</FlexItem>
-										<IconWithCurrentColor
-											icon={
-												isRTL()
-													? chevronLeft
-													: chevronRight
-											}
-										/>
-									</HStack>
-								</NavigationButtonAsItem>
-							</ItemGroup>
-						) }
-						<ContextMenu />
-					</VStack>
+				<VStack spacing={ 4 }>
+					<Card>
+						<CardMedia>
+							<StylesPreview />
+						</CardMedia>
+					</Card>
+					{ !! variations?.length && (
+						<ItemGroup>
+							<NavigationButtonAsItem path="/variations">
+								<HStack justify="space-between">
+									<FlexItem>
+										{ __( 'Browse styles' ) }
+									</FlexItem>
+									<IconWithCurrentColor
+										icon={
+											isRTL() ? chevronLeft : chevronRight
+										}
+									/>
+								</HStack>
+							</NavigationButtonAsItem>
+						</ItemGroup>
+					) }
+					<ContextMenu />
 				</VStack>
 			</CardBody>
 
@@ -111,6 +99,16 @@ function ScreenRoot() {
 					</NavigationButtonAsItem>
 				</ItemGroup>
 			</CardBody>
+
+			<CardFooter>
+				<Button
+					icon={ reusableBlock }
+					label={ __( 'Randomize colors' ) }
+					onClick={ randomizeTheme }
+				>
+					{ __( 'Randomize' ) }
+				</Button>
+			</CardFooter>
 		</Card>
 	);
 }
