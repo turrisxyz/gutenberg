@@ -19,6 +19,7 @@
 -   `VStack`: Convert to TypeScript ([#41850](https://github.com/WordPress/gutenberg/pull/41587)).
 -   `AlignmentMatrixControl`: Refactor away from `_.flattenDeep()` in utils ([#41814](https://github.com/WordPress/gutenberg/pull/41814/)).
 -   `AutoComplete`: Revert recent `exhaustive-deps` refactor ([#41820](https://github.com/WordPress/gutenberg/pull/41820)).
+-   `RangeControl`: Convert to TypeScript ([#40535](https://github.com/WordPress/gutenberg/pull/40535)).
 
 ## 19.13.0 (2022-06-15)
 
