@@ -16,6 +16,7 @@ import { publishPost } from './publish-post';
 import { selectBlocks } from './select-blocks';
 import { showBlockToolbar } from './show-block-toolbar';
 import { saveSiteEditorEntities } from './site-editor';
+import { transformBlockTo } from './transform-block-to';
 
 type EditorConstructorProps = {
 	page: Page;
@@ -52,7 +53,6 @@ export class Editor {
 
 		return frame;
 	}
-
 	clickBlockOptionsMenuItem = clickBlockOptionsMenuItem;
 	clickBlockToolbarButton = clickBlockToolbarButton;
 	getEditedPostContent = getEditedPostContent;
@@ -63,4 +63,5 @@ export class Editor {
 	saveSiteEditorEntities = saveSiteEditorEntities;
 	selectBlocks = selectBlocks;
 	showBlockToolbar = showBlockToolbar;
+	transformBlockTo = transformBlockTo;
 }
