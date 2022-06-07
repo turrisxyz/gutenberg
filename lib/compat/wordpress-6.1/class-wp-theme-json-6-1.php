@@ -39,7 +39,6 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 		'h5'     => 'h5',
 		'h6'     => 'h6',
 		'button' => '.wp-element-button, .wp-block-button__link', // We have the .wp-block-button__link class so that this will target older buttons that have been serialized.
-		'img'    => '.wp-block-image__crop-area, img', // Until we can access global styles in block editor we need to be able to apply the same styles on image croppers.
 	);
 
 	const __EXPERIMENTAL_ELEMENT_CLASS_NAMES = array(
