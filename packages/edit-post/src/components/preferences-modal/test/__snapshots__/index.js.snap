@@ -23,6 +23,11 @@ exports[`EditPostPreferencesModal should match snapshot when the modal is active
               title="Appearance"
             >
               <WithSelect(WithDispatch(BaseOption))
+                featureName="reducedUI"
+                help="Reduce visual distractions by hiding the toolbar and other elements to focus on writing."
+                label="Distraction Free"
+              />
+              <WithSelect(WithDispatch(BaseOption))
                 featureName="focusMode"
                 help="Highlights the current block and fades other content."
                 label="Spotlight mode"
@@ -153,6 +158,11 @@ exports[`EditPostPreferencesModal should match snapshot when the modal is active
               description="Customize options related to the block editor interface and editing flow."
               title="Appearance"
             >
+              <WithSelect(WithDispatch(BaseOption))
+                featureName="reducedUI"
+                help="Reduce visual distractions by hiding the toolbar and other elements to focus on writing."
+                label="Distraction Free"
+              />
               <WithSelect(WithDispatch(BaseOption))
                 featureName="focusMode"
                 help="Highlights the current block and fades other content."

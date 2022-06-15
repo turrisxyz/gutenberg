@@ -66,8 +66,11 @@ const interfaceLabels = {
 function Layout( { styles } ) {
 	const isMobileViewport = useViewportMatch( 'medium', '<' );
 	const isHugeViewport = useViewportMatch( 'huge', '>=' );
-	const { openGeneralSidebar, closeGeneralSidebar, setIsInserterOpened } =
-		useDispatch( editPostStore );
+	const {
+		openGeneralSidebar,
+		closeGeneralSidebar,
+		setIsInserterOpened,
+	} = useDispatch( editPostStore );
 	const { createErrorNotice } = useDispatch( noticesStore );
 	const {
 		mode,
@@ -93,15 +96,17 @@ function Layout( { styles } ) {
 
 		return {
 			isTemplateMode: select( editPostStore ).isEditingTemplate(),
-			hasFixedToolbar:
-				select( editPostStore ).isFeatureActive( 'fixedToolbar' ),
+			hasFixedToolbar: select( editPostStore ).isFeatureActive(
+				'fixedToolbar'
+			),
 			sidebarIsOpened: !! (
 				select( interfaceStore ).getActiveComplementaryArea(
 					editPostStore.name
 				) || select( editPostStore ).isPublishSidebarOpened()
 			),
-			isFullscreenActive:
-				select( editPostStore ).isFeatureActive( 'fullscreenMode' ),
+			isFullscreenActive: select( editPostStore ).isFeatureActive(
+				'fullscreenMode'
+			),
 			isInserterOpened: select( editPostStore ).isInserterOpened(),
 			isListViewOpened: select( editPostStore ).isListViewOpened(),
 			mode: select( editPostStore ).getEditorMode(),
@@ -113,10 +118,12 @@ function Layout( { styles } ) {
 			nextShortcut: select(
 				keyboardShortcutsStore
 			).getAllShortcutKeyCombinations( 'core/edit-post/next-region' ),
-			showIconLabels:
-				select( editPostStore ).isFeatureActive( 'showIconLabels' ),
-			hasReducedUI:
-				select( editPostStore ).isFeatureActive( 'reducedUI' ),
+			showIconLabels: select( editPostStore ).isFeatureActive(
+				'showIconLabels'
+			),
+			hasReducedUI: select( editPostStore ).isFeatureActive(
+				'reducedUI'
+			),
 			showBlockBreadcrumbs: select( editPostStore ).isFeatureActive(
 				'showBlockBreadcrumbs'
 			),
@@ -124,11 +131,21 @@ function Layout( { styles } ) {
 			documentLabel: postTypeLabel || _x( 'Document', 'noun' ),
 		};
 	}, [] );
+
+	const [ isDistractionFree, setIsDistractionFree ] = useState(
+		hasReducedUI
+	);
+
+	useEffect( () => {
+		setIsDistractionFree( hasReducedUI );
+	}, [ hasReducedUI ] );
+
 	const className = classnames( 'edit-post-layout', 'is-mode-' + mode, {
 		'is-sidebar-opened': sidebarIsOpened,
 		'has-fixed-toolbar': hasFixedToolbar,
 		'has-metaboxes': hasActiveMetaboxes,
 		'show-icon-labels': showIconLabels,
+		'is-distraction-free': isDistractionFree,
 	} );
 	const openSidebarPanel = () =>
 		openGeneralSidebar(
@@ -149,8 +166,10 @@ function Layout( { styles } ) {
 
 	// Local state for save panel.
 	// Note 'truthy' callback implies an open panel.
-	const [ entitiesSavedStatesCallback, setEntitiesSavedStatesCallback ] =
-		useState( false );
+	const [
+		entitiesSavedStatesCallback,
+		setEntitiesSavedStatesCallback,
+	] = useState( false );
 	const closeEntitiesSavedStates = useCallback(
 		( arg ) => {
 			if ( typeof entitiesSavedStatesCallback === 'function' ) {
@@ -204,6 +223,7 @@ function Layout( { styles } ) {
 					...interfaceLabels,
 					secondarySidebar: secondarySidebarLabel,
 				} }
+				isDistractionFree={ isDistractionFree }
 				header={
 					<Header
 						setEntitiesSavedStatesCallback={
