@@ -70,6 +70,7 @@
 	margin-right: $grid-unit-20;
 	margin-left: $grid-unit-20;
 	width: unset;
+
 	.components-toggle-group-control {
 		min-height: $grid-unit-40;
 	}
@@ -112,3 +113,8 @@
 	// Match the height of the rest of the icons (24px).
 	height: $grid-unit * 3;
 }
+
+.edit-site-global-styles-sidebar__navigator-screen {
+	display: flex;
+}
+

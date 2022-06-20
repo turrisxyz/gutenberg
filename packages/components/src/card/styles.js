@@ -39,6 +39,7 @@ export const Footer = css`
 
 export const Content = css`
 	height: 100%;
+	display: flex;
 `;
 
 export const Body = css`
