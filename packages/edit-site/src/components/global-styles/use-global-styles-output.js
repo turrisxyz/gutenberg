@@ -29,9 +29,16 @@ import { __unstablePresetDuotoneFilter as PresetDuotoneFilter } from '@wordpress
 /**
  * Internal dependencies
  */
-import { PRESET_METADATA, ROOT_BLOCK_SELECTOR } from './utils';
+import { PRESET_METADATA, ROOT_BLOCK_SELECTOR, scopeSelector } from './utils';
 import { GlobalStylesContext } from './context';
 import { useSetting } from './hooks';
+
+const SUPPORT_FEATURES = {
+	__experimentalBorder: 'border',
+	color: 'color',
+	spacing: 'spacing',
+	typography: 'typography',
+};
 
 function compileStyleValue( uncompiledValue ) {
 	const VARIABLE_REFERENCE_PREFIX = 'var:';
@@ -270,6 +277,7 @@ export const getNodesWithStyles = ( tree, blockSelectors ) => {
 				styles: blockStyles,
 				selector: blockSelectors[ blockName ].selector,
 				duotoneSelector: blockSelectors[ blockName ].duotoneSelector,
+				featureSelectors: blockSelectors[ blockName ].featureSelectors,
 			} );
 		}
 
@@ -377,7 +385,35 @@ export const toStyles = ( tree, blockSelectors, hasBlockGapSupport ) => {
 	 * @link https://github.com/WordPress/gutenberg/issues/36147.
 	 */
 	let ruleset = 'body {margin: 0;}';
-	nodesWithStyles.forEach( ( { selector, duotoneSelector, styles } ) => {
+	nodesWithStyles.forEach( ( nodeWithStyle ) => {
+		const { selector, duotoneSelector, featureSelectors, styles } =
+			nodeWithStyle;
+
+		// Process styles for block support features with custom feature level
+		// CSS selectors set.
+		if ( featureSelectors ) {
+			Object.entries( featureSelectors ).forEach(
+				( [ featureName, featureSelector ] ) => {
+					if ( styles?.[ featureName ] ) {
+						const featureStyles = {
+							[ featureName ]: styles[ featureName ],
+						};
+						const featureDeclarations =
+							getStylesDeclarations( featureStyles );
+						delete styles[ featureName ];
+
+						if ( !! featureDeclarations.length ) {
+							ruleset =
+								ruleset +
+								`${ featureSelector }{${ featureDeclarations.join(
+									';'
+								) } }`;
+						}
+					}
+				}
+			);
+		}
+
 		const duotoneStyles = {};
 		if ( styles?.filter ) {
 			duotoneStyles.filter = styles.filter;
@@ -395,19 +431,19 @@ export const toStyles = ( tree, blockSelectors, hasBlockGapSupport ) => {
 				`${ duotoneSelector }{${ duotoneDeclarations.join( ';' ) };}`;
 		}
 
-		// Process the remaning block styles (they use either normal block class or __experimentalSelector).
+		// Process the remaining block styles (they use either normal block class or __experimentalSelector).
 		const declarations = getStylesDeclarations( styles );
 		if ( declarations?.length ) {
 			ruleset = ruleset + `${ selector }{${ declarations.join( ';' ) };}`;
 		}
 
 		// Check for pseudo selector in `styles` and handle separately.
-		const psuedoSelectorStyles = Object.entries( styles ).filter(
+		const pseudoSelectorStyles = Object.entries( styles ).filter(
 			( [ key ] ) => key.startsWith( ':' )
 		);
 
-		if ( psuedoSelectorStyles?.length ) {
-			psuedoSelectorStyles.forEach( ( [ pseudoKey, pseudoRule ] ) => {
+		if ( pseudoSelectorStyles?.length ) {
+			pseudoSelectorStyles.forEach( ( [ pseudoKey, pseudoRule ] ) => {
 				const pseudoDeclarations = getStylesDeclarations( pseudoRule );
 
 				if ( ! pseudoDeclarations?.length ) {
@@ -416,7 +452,7 @@ export const toStyles = ( tree, blockSelectors, hasBlockGapSupport ) => {
 
 				// `selector` maybe provided in a form
 				// where block level selectors have sub element
-				// selectors appended to them as a comma seperated
+				// selectors appended to them as a comma separated
 				// string.
 				// e.g. `h1 a,h2 a,h3 a,h4 a,h5 a,h6 a`;
 				// Split and append pseudo selector to create
@@ -426,11 +462,11 @@ export const toStyles = ( tree, blockSelectors, hasBlockGapSupport ) => {
 					.map( ( sel ) => sel + pseudoKey )
 					.join( ',' );
 
-				const psuedoRule = `${ _selector }{${ pseudoDeclarations.join(
+				const pseudoRuleSet = `${ _selector }{${ pseudoDeclarations.join(
 					';'
 				) };}`;
 
-				ruleset = ruleset + psuedoRule;
+				ruleset = ruleset + pseudoRuleSet;
 			} );
 		}
 	} );
@@ -486,10 +522,30 @@ const getBlockSelectors = ( blockTypes ) => {
 			'.wp-block-' + name.replace( 'core/', '' ).replace( '/', '-' );
 		const duotoneSelector =
 			blockType?.supports?.color?.__experimentalDuotone ?? null;
+
+		// For each block support feature add any custom selectors.
+		const featureSelectors = {};
+		Object.entries( SUPPORT_FEATURES ).forEach(
+			( [ featureKey, featureName ] ) => {
+				const featureSelector =
+					blockType?.supports?.[ featureKey ]?.__experimentalSelector;
+
+				if ( featureSelector ) {
+					featureSelectors[ featureName ] = scopeSelector(
+						selector,
+						featureSelector
+					);
+				}
+			}
+		);
+
 		result[ name ] = {
 			name,
 			selector,
 			duotoneSelector,
+			featureSelectors: Object.keys( featureSelectors ).length
+				? featureSelectors
+				: undefined,
 		};
 	} );
 

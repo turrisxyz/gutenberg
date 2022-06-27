@@ -47,6 +47,15 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 		'caption' => 'wp-element-caption',
 	);
 
+	// List of block support features that can have their related styles
+	// generated under their own feature level selector rather than the block's.
+	const SUPPORT_FEATURES = array(
+		'__experimentalBorder' => 'border',
+		'color'                => 'color',
+		'spacing'              => 'spacing',
+		'typography'           => 'typography',
+	);
+
 	/**
 	 * Given an element name, returns a class name.
 	 *
@@ -281,6 +290,25 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 				static::$blocks_metadata[ $block_name ]['duotone'] = $block_type->supports['color']['__experimentalDuotone'];
 			}
 
+			// Generate block support feature level selectors if opted into
+			// for the current block.
+			$features = array();
+			foreach ( static::SUPPORT_FEATURES as $key => $feature ) {
+				if (
+					isset( $block_type->supports[ $key ]['__experimentalSelector'] ) &&
+					$block_type->supports[ $key ]['__experimentalSelector']
+				) {
+					$features[ $feature ] = static::scope_selector(
+						static::$blocks_metadata[ $block_name ]['selector'],
+						$block_type->supports[ $key ]['__experimentalSelector']
+					);
+				}
+			}
+
+			if ( ! empty( $features ) ) {
+				static::$blocks_metadata[ $block_name ]['features'] = $features;
+			}
+
 			// Assign defaults, then overwrite those that the block sets by itself.
 			// If the block selector is compounded, will append the element to each
 			// individual block selector.
@@ -417,11 +445,17 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 				$duotone_selector = $selectors[ $name ]['duotone'];
 			}
 
+			$feature_selectors = null;
+			if ( isset( $selectors[ $name ]['features'] ) ) {
+				$feature_selectors = $selectors[ $name ]['features'];
+			}
+
 			$nodes[] = array(
 				'name'     => $name,
 				'path'     => array( 'styles', 'blocks', $name ),
 				'selector' => $selector,
 				'duotone'  => $duotone_selector,
+				'features' => $feature_selectors,
 			);
 
 			if ( isset( $theme_json['styles']['blocks'][ $name ]['elements'] ) ) {
@@ -431,7 +465,7 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 						'selector' => $selectors[ $name ]['elements'][ $element ],
 					);
 
-					// Handle any psuedo selectors for the element.
+					// Handle any pseudo selectors for the element.
 					if ( isset( static::VALID_ELEMENT_PSEUDO_SELECTORS[ $element ] ) ) {
 						foreach ( static::VALID_ELEMENT_PSEUDO_SELECTORS[ $element ] as $pseudo_selector ) {
 							if ( isset( $theme_json['styles']['blocks'][ $name ]['elements'][ $element ][ $pseudo_selector ] ) ) {
@@ -461,6 +495,27 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 
 		$selector = $block_metadata['selector'];
 		$settings = _wp_array_get( $this->theme_json, array( 'settings' ) );
+
+		// Process style declarations for block support features the current
+		// block contains selectors for. Values for a feature with a custom
+		// selector are filtered from the theme.json node before it is
+		// processed as normal.
+		$feature_declarations = array();
+
+		if ( ! empty( $block_metadata['features'] ) ) {
+			foreach ( $block_metadata['features'] as $feature_name => $feature_selector ) {
+				if ( ! empty( $node[ $feature_name ] ) ) {
+					// Create temporary node containing only the feature data
+					// to leverage existing `compute_style_properties` function.
+					$feature = array( $feature_name => $node[ $feature_name ] );
+					// Generate the feature's declarations only.
+					$feature_declarations[ $feature_selector ] = static::compute_style_properties( $feature, $settings, null, $this->theme_json );
+					// Remove the feature from the block's node now the
+					// styles will be included under the feature level selector.
+					unset( $node[ $feature_name ] );
+				}
+			}
+		}
 
 		// Attempt to parse a pseudo selector (e.g. ":hover") from the $selector ("a:hover").
 		$pseudo_matches = array();
@@ -515,6 +570,11 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 		if ( isset( $block_metadata['duotone'] ) && ! empty( $declarations_duotone ) ) {
 			$selector_duotone = static::scope_selector( $block_metadata['selector'], $block_metadata['duotone'] );
 			$block_rules     .= static::to_ruleset( $selector_duotone, $declarations_duotone );
+		}
+
+		// 4. Generate and append the feature level rulesets.
+		foreach ( $feature_declarations as $feature_selector => $individual_feature_declarations ) {
+			$block_rules .= static::to_ruleset( $feature_selector, $individual_feature_declarations );
 		}
 
 		if ( static::ROOT_BLOCK_SELECTOR === $selector ) {
