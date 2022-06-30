@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { useState } from '@wordpress/element';
+import { useState, Platform } from '@wordpress/element';
 import { useSelect } from '@wordpress/data';
 import { store as coreStore } from '@wordpress/core-data';
 
@@ -21,10 +21,12 @@ export default function useGetMedia( innerBlockImages ) {
 			if ( ! innerBlockImages?.length ) {
 				return currentImageMedia;
 			}
-
-			const imageIds = innerBlockImages
-				.map( ( imageBlock ) => imageBlock.attributes.id )
-				.filter( ( id ) => id !== undefined );
+			// On native we use local media IDs for uploads so this should be skipped.
+			const imageIds = ! Platform.isNative
+				? innerBlockImages
+						.map( ( imageBlock ) => imageBlock.attributes.id )
+						.filter( ( id ) => id !== undefined )
+				: [];
 
 			if ( imageIds.length === 0 ) {
 				return currentImageMedia;
