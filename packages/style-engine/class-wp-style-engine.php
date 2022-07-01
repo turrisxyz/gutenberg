@@ -145,25 +145,25 @@ class WP_Style_Engine {
 			),
 		),
 		'spacing'    => array(
-			'padding' => array(
+			'padding'  => array(
 				'property_keys' => array(
 					'default'    => 'padding',
 					'individual' => 'padding-%s',
 				),
 				'path'          => array( 'spacing', 'padding' ),
 			),
-			'margin'  => array(
+			'margin'   => array(
 				'property_keys' => array(
 					'default'    => 'margin',
 					'individual' => 'margin-%s',
 				),
 				'path'          => array( 'spacing', 'margin' ),
 			),
-			'blockGap'  => array(
-				'value_func' => 'static::get_css_custom_property_declaration',
+			'blockGap' => array(
+				'value_func'    => 'static::get_css_custom_property_declaration',
 				'property_keys' => array(
-					'default'    => 'gap',
-					'css_var'    => '--wp--style--block-gap',
+					'default' => 'gap',
+					'css_var' => '--wp--style--block-gap',
 				),
 				'path'          => array( 'spacing', 'blockGap' ),
 			),
@@ -415,7 +415,8 @@ class WP_Style_Engine {
 			// Generate inline style declarations.
 			foreach ( $css_declarations as $css_property => $css_value ) {
 				// @TODO Commented out so that it can test CSS property definitions, e.g., --wp--preset--something: 1px;
-				$filtered_css_declaration = esc_html( safecss_filter_attr( "{$css_property}: {$css_value}" ) );
+				//$filtered_css_declaration = esc_html( safecss_filter_attr( "{$css_property}: {$css_value}" ) );
+				$filtered_css_declaration = esc_html( "{$css_property}: {$css_value}" );
 				if ( ! empty( $filtered_css_declaration ) ) {
 					if ( $should_prettify ) {
 						$filtered_css_declarations[] = "\t$filtered_css_declaration;\n";
@@ -493,7 +494,7 @@ class WP_Style_Engine {
 
 			if ( $style_definition && isset( $style_definition['property_keys']['individual'] ) ) {
 				// Set a CSS var if there is a valid preset value.
-				$slug = isset( $individual_property_definition['css_vars'][ $css_property ] ) ? static::get_slug_from_preset_value( $value, $css_property ) : null;
+				$slug = isset( $individual_property_definition['css_vars'][ $css_property ] ) ? self::get_slug_from_preset_value( $value, $css_property ) : null;
 				if ( $slug ) {
 					$css_var = strtr(
 						$individual_property_definition['css_vars'][ $css_property ],
@@ -510,8 +511,9 @@ class WP_Style_Engine {
 
 	// For block gap. TESTING!!!
 	// This only works for static::ROOT_BLOCK_SELECTOR right now.
+	// We'll need to support both `blockGap: 1px` and `--wp--style--block-gap: 1px`
 	protected static function get_css_custom_property_declaration( $style_value, $style_definition ) {
-		$rules = array();
+		//$rules = self::get_css_declarations( $style_value, $style_definition, true );
 		if ( isset( $style_definition['property_keys']['css_var'] ) ) {
 			$rules[ $style_definition['property_keys']['css_var'] ] = $style_value;
 		}
