@@ -73,8 +73,9 @@ class WP_Style_Engine_Test extends WP_UnitTestCase {
 						'text' => 'var:preset|color|texas-flood',
 					),
 					'spacing' => array(
-						'margin'  => '111px',
-						'padding' => '0',
+						'margin'   => '111px',
+						'padding'  => '0',
+						//'blockGap' => '100px',
 					),
 					'border'  => array(
 						'color' => 'var:preset|color|cool-caramel',
@@ -84,7 +85,7 @@ class WP_Style_Engine_Test extends WP_UnitTestCase {
 				),
 				'options'         => array(),
 				'expected_output' => array(
-					'css'        => 'border-style: dotted; border-width: 2rem; padding: 0; margin: 111px;',
+					'css'        => 'border-style: dotted; border-width: 2rem; padding: 0; margin: 111px;/* gap: 100px;*/',
 					'classnames' => 'has-text-color has-texas-flood-color has-border-color has-cool-caramel-border-color',
 				),
 			),
@@ -351,11 +352,12 @@ class WP_Style_Engine_Test extends WP_UnitTestCase {
 			'valid_css_custom_property'                    => array(
 				'block_styles'    => array(
 					'spacing' => array(
-						//'--wp--style--block-gap' => '.0001rem',
-						'blockGap'               => '10000rem',
+						'blockGap' => '10000rem',
 					),
 				),
-				'options'         => array(),
+				'options'         => array(
+					'layer' => 0,
+				),
 				'expected_output' => array(
 					'css' => '--wp--style--block-gap: 10000rem;',
 				),
