@@ -513,7 +513,7 @@ export function toSvgFilters( tree, blockSelectors ) {
 	} );
 }
 
-const getBlockSelectors = ( blockTypes ) => {
+export const getBlockSelectors = ( blockTypes ) => {
 	const result = {};
 	blockTypes.forEach( ( blockType ) => {
 		const name = blockType.name;
