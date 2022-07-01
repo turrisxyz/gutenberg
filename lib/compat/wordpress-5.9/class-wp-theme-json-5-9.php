@@ -826,42 +826,6 @@ class WP_Theme_JSON_5_9 {
 	}
 
 	/**
-	 * Converts each styles section into a list of rulesets
-	 * to be appended to the stylesheet.
-	 * These rulesets contain all the css variables (custom variables and preset variables).
-	 *
-	 * See glossary at https://developer.mozilla.org/en-US/docs/Web/CSS/Syntax
-	 *
-	 * For each section this creates a new ruleset such as:
-	 *
-	 *     block-selector {
-	 *       --wp--preset--category--slug: value;
-	 *       --wp--custom--variable: value;
-	 *     }
-	 *
-	 * @param array $nodes Nodes with settings.
-	 * @param array $origins List of origins to process.
-	 * @return string The new stylesheet.
-	 */
-	protected function get_css_variables( $nodes, $origins ) {
-		$stylesheet = '';
-		foreach ( $nodes as $metadata ) {
-			if ( null === $metadata['selector'] ) {
-				continue;
-			}
-
-			$selector = $metadata['selector'];
-
-			$node         = _wp_array_get( $this->theme_json, $metadata['path'], array() );
-			$declarations = array_merge( static::compute_preset_vars( $node, $origins ), static::compute_theme_vars( $node ) );
-
-			$stylesheet .= static::to_ruleset( $selector, $declarations );
-		}
-
-		return $stylesheet;
-	}
-
-	/**
 	 * Given a selector and a declaration list,
 	 * creates the corresponding ruleset.
 	 *

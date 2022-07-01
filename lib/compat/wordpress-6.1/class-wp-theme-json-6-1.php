@@ -475,9 +475,9 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 
 		$current_element = $is_processing_element ? $block_metadata['path'][ count( $block_metadata['path'] ) - 1 ] : null;
 
-		// If the current selector is a pseudo selector that's defined in the allow list for the current
+		// If the current selector is a pseudo selector that's defined in `VALID_ELEMENT_PSEUDO_SELECTORS` for the current
 		// element then compute the style properties for it.
-		// Otherwise just compute the styles for the default selector as normal.
+		// Otherwise, just compute the styles for the default selector as normal.
 		if ( $pseudo_selector && isset( $node[ $pseudo_selector ] ) && isset( static::VALID_ELEMENT_PSEUDO_SELECTORS[ $current_element ] ) && in_array( $pseudo_selector, static::VALID_ELEMENT_PSEUDO_SELECTORS[ $current_element ], true ) ) {
 			$declarations = static::compute_style_properties( $node[ $pseudo_selector ], $settings, null, $this->theme_json );
 		} else {
@@ -505,7 +505,13 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 		 * @link https://github.com/WordPress/gutenberg/issues/36147.
 		 */
 		if ( static::ROOT_BLOCK_SELECTOR === $selector ) {
-			$block_rules .= 'body { margin: 0; }';
+			array_unshift(
+				$declarations,
+				array(
+					'name'  => 'margin',
+					'value' => '0',
+				)
+			);
 		}
 
 		// 2. Generate and append the rules that use the general selector.
@@ -558,6 +564,46 @@ class WP_Theme_JSON_6_1 extends WP_Theme_JSON_6_0 {
 		}
 
 		return $block_rules;
+	}
+
+	/**
+	 * Converts each styles section into a list of rulesets
+	 * to be appended to the stylesheet.
+	 * These rulesets contain all the css variables (custom variables and preset variables).
+	 *
+	 * See glossary at https://developer.mozilla.org/en-US/docs/Web/CSS/Syntax
+	 *
+	 * For each section this creates a new ruleset such as:
+	 *
+	 *     block-selector {
+	 *       --wp--preset--category--slug: value;
+	 *       --wp--custom--variable: value;
+	 *     }
+	 *
+	 * @param array $nodes Nodes with settings.
+	 * @param array $origins List of origins to process.
+	 * @return string The new stylesheet.
+	 */
+	protected function get_css_variables( $nodes, $origins ) {
+		$stylesheet = '';
+		foreach ( $nodes as $metadata ) {
+			if ( null === $metadata['selector'] ) {
+				continue;
+			}
+
+			$selector = $metadata['selector'];
+
+			if ( static::ROOT_BLOCK_SELECTOR === $selector ) {
+				$selector = ':root';
+			}
+
+			$node         = _wp_array_get( $this->theme_json, $metadata['path'], array() );
+			$declarations = array_merge( static::compute_preset_vars( $node, $origins ), static::compute_theme_vars( $node ) );
+
+			$stylesheet .= static::to_ruleset( $selector, $declarations );
+		}
+
+		return $stylesheet;
 	}
 
 	/**
